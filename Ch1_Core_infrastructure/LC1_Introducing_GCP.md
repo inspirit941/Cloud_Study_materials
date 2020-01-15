@@ -70,6 +70,7 @@ Fault Tolerance를 위해서는 동일한 Region 내 여러 Zone에서 Resources
 Different Region에서 Resources를 할당받는 경우도 많다. 보통 세계 각국의 User에게 서비스해야 할 경우. 유저와 가까운 지역의 Region에서 할당받는 식임.
 
 몇몇 GCP Service는 placing Resources in Multi-Region를 지원한다. 예컨대 ‘Europe’이라는 Multi-Region에  GCP Storage를 등록할 경우, 최소 두 개의 geographical Location에 데이터를 저장하는 식. (최소 160km 떨어진 지점에.)
+
 ---
 ### Environmental Responsibility
 
