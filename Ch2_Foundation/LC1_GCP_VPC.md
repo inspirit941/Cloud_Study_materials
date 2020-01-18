@@ -332,6 +332,3 @@ In this case, the bastion VM serves as a management and maintenance interface to
 Minimum # of IP address that VM need = 1. (VM 자체는 internal IP만 있으면 된다.)
 
 
-
-
-#컴퓨터공학쪽지식/Coursera/GCP/ch2_Foundation/Introduction
