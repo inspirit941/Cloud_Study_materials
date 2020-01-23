@@ -60,7 +60,7 @@ Delegation of administration Rights도 담당한다. Department 폴더가 있고
 반대로, 특정 Folder와 그 하위 folders에만 resource 접근권한을 부여하는 식의 limit access도 가능하다.
 
 * Other Resource Manager Roles
-[image:16A837D2-FDD2-4007-BBF2-64346C3A5911-491-0000772825CD991A/스크린샷 2020-01-23 오후 12.48.45.png]
+<img width="931" alt="스크린샷 2020-01-23 오후 12 48 45" src="https://user-images.githubusercontent.com/26548454/72964852-48c3cb00-3dfe-11ea-929b-bdb250f8f4b1.png">
 
 
 ---
@@ -83,7 +83,8 @@ Concentric한 특성. 즉 Owner는 editor 권한이 포함되어 있고, editor�
 
 Collections of Permission이라고 봐도 된다.
 
-[image:AED6303C-3076-4430-8729-4590A581E477-491-000078678B8BCD2C/스크린샷 2020-01-23 오후 1.11.19.png]
+<img width="930" alt="스크린샷 2020-01-23 오후 1 11 19" src="https://user-images.githubusercontent.com/26548454/72964900-65600300-3dfe-11ea-8938-7374a1a21211.png">
+
 
 IAM으로 특정 프로젝트에 InstanceAdmin Role을 부여했다고 할 때, 이 role은 결국 compute engine을 다룰 수 있는 여러 가지 permission의 집합이 된다. 이 permission은 API 형태.
 
@@ -163,7 +164,8 @@ Custom Account는 flexibilty가 좀 더 높다. 원하는 만큼 만들 수 있�
 Authorization is the process of determining what permission an authenticated identity has a set of specified resources.
 (어떤 identity가 어떤 resource에 permission을 가지고 있는지 호확인하는 작업)
 
-[image:1CC7C596-DD5B-4A69-BDB0-F2D40F70E726-491-00007DB7A4E88925/스크린샷 2020-01-23 오후 2.54.15.png]
+<img width="897" alt="스크린샷 2020-01-23 오후 2 54 15" src="https://user-images.githubusercontent.com/26548454/72964924-7872d300-3dfe-11ea-87a1-77d594def65d.png">
+
 
 - Scopes = whether an authenticated identity is authorized. 보통 authenticated Identities / service account를 가지고 있으면 된다.
 
@@ -183,7 +185,8 @@ Service Account 계정을 받은 User는 Service Account가 접근할 수 있는
 
 Q. Google Account도 있고, Google Account 자체도 그룹핑이 가능한데 왜 굳이 User에게 service account를 그룹핑해서 주는 건가. 이득이 뭐지
 
-[image:A0F08ECD-0B78-4D26-BFB1-7E696B8A1C3E-491-00008012E886921B/스크린샷 2020-01-23 오후 3.36.34.png]
+<img width="898" alt="스크린샷 2020-01-23 오후 3 36 34" src="https://user-images.githubusercontent.com/26548454/72964940-845e9500-3dfe-11ea-857a-44fa193f08c7.png">
+
 
 
 Service Account 1 : project A 소속, project B의 resource에 editor 권한이 있음
@@ -195,7 +198,8 @@ users는 username + password를 사용하지만, Service Account는 authenticate
 
 GCP-managed key는 GCP service에서 사용하는 key. Compute engine / app engine 등등.
 
-[image:14F630A2-8E70-4E02-ABF3-3CB5200CE21B-491-0000806558A8A189/스크린샷 2020-01-23 오후 3.42.30.png]
+<img width="894" alt="스크린샷 2020-01-23 오후 3 42 30" src="https://user-images.githubusercontent.com/26548454/72964980-92141a80-3dfe-11ea-8aad-de0d9a67227a.png">
+
 
 ---
 
