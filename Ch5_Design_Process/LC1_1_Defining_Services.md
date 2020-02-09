@@ -281,3 +281,45 @@ Ex) MySQL로 출발할 경우 … 얘는 scale이 안 된다. Horizontal Scaling
 
 ---
 
+## Periodic Slowdown in Application 
+
+특정 상황에서는 속도가 매우 느리다가, 어느 순간에는 다시 빨라지는 상황.
+
+<img width="920" alt="스크린샷 2020-02-09 오후 2 22 08" src="https://user-images.githubusercontent.com/26548454/74097131-01eb0a80-4b4c-11ea-85f6-9ca54859e2c2.png">
+
+협력 안 하는 회사를 가정한다면, 위와 같은 모양새가 나온다. Web팀은 App에 문제가 있다고 보고, App 팀은 Web server에 문제가 있다고 생각함. Operation team은 단지 deployment와 production에만 관여했기 때문에, 두 팀 중 어디가 문제인지 확인할 방법이 없음
+
+
+<img width="926" alt="스크린샷 2020-02-09 오후 2 24 37" src="https://user-images.githubusercontent.com/26548454/74097134-06afbe80-4b4c-11ea-836b-181cd977d6e3.png">
+
+사람 탓하지 마라. 사람은 잘못이 없다. 보통은 세 개 - system, processes, behavior - 중에 원인이 있다.
+
+
+
+<img width="921" alt="스크린샷 2020-02-09 오후 2 38 30" src="https://user-images.githubusercontent.com/26548454/74097136-07e0eb80-4b4c-11ea-995d-ade790ee43b9.png">
+
+나중에 비슷한 일이 발생했을 때를 대비한 report 제작. Recovert process에서 필수적으로 만들어둬야 한다.
+
+
+
+<img width="924" alt="스크린샷 2020-02-09 오후 2 39 53" src="https://user-images.githubusercontent.com/26548454/74097137-08798200-4b4c-11ea-87ec-7cb9086576f4.png">
+
+사용량 많을 땐 cpu 사용량이 100%여서 그렇다는 결론.
+cf. 다만, cpu 사용량은 SLI로 사용할 수 없다.
+
+어쨌든 scalability issue인 건 맞음. 백엔드의 썸네일 프로세싱 작업을 수행하는 부분의 scale이 필요한 상황.
+
+
+<img width="924" alt="스크린샷 2020-02-09 오후 2 41 33" src="https://user-images.githubusercontent.com/26548454/74097132-04e5fb00-4b4c-11ea-92bc-f5a49e3962c5.png">
+
+
+MSA의 장점이 드러나는 부분인데, storage를 GCS로 isolated해둔 상태이므로, same code 그대로 여러 instnace에 적용할 수 있다. Upload server와 썸네일 처리하는 서버 사이에 internal load balancer를 두는 식으로. 해당 cpu 사용량의 80%를 넘으면 traffic distribution을 시행하도록 작업할 수 있다.
+
+
+<img width="924" alt="스크린샷 2020-02-09 오후 2 52 12" src="https://user-images.githubusercontent.com/26548454/74097138-09aaaf00-4b4c-11ea-8abd-9cad8dd42be7.png">
+
+
+다만, 이 작업을 수행한다고 해서 SLI나 SLO가 바뀔 일은 없다. 여전히 주된 measurement는 end-to-end latency, error rate일 거다.
+
+
+---
