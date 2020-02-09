@@ -134,3 +134,56 @@ ID (log entry) | session ID | timestamp | payload (info about application On wha
 두 개의 로그를 통합하는 게 Sizing 과정에서 매우 중요함. 일단 이 정도 로그 사이즈는 나쁘지 않다. 이후에 measurement을 정의할 때 유용하게 쓰일 예정
 
 ---
+
+## intermittent Outages
+
+
+<img width="856" alt="스크린샷 2020-02-09 오전 11 51 11" src="https://user-images.githubusercontent.com/26548454/74095703-d827e880-4b37-11ea-850b-329d962d093d.png">
+
+서비스가 제대로 작동하지 않는 상황. 랜덤하게 발생하는 이슈였는데, 점점 빈도가 잦아져서 사용자가 불편함을 느낄 정도라고 해 보자. 뭐가 문제일까.
+
+<img width="923" alt="스크린샷 2020-02-09 오전 11 53 08" src="https://user-images.githubusercontent.com/26548454/74095706-dc540600-4b37-11ea-88b9-cfc32b2e8470.png">
+
+Troubleshooting결과 persistent disk on application server cannot keep up with the scale of demand. 이런 경우는 VM의 cpu 파워만 올리는 걸로는 한계가 있기 마련이다. Scale up을 진행할 때, file system에서 제대로 파일 control을 하기 어려워하는 문제.
+
+결과적으로 Capacity issue.
+
+해결책으로 local file system에 저장하던 데이터를 GCS로 바꾸기로 . 로컬에서 파일을 불러오는 게 아니기 때문에, 이제 latency가 발생할 수 있다.
+
+
+<img width="927" alt="스크린샷 2020-02-09 오전 11 56 29" src="https://user-images.githubusercontent.com/26548454/74095708-dd853300-4b37-11ea-92cc-4fc63922c009.png">
+
+SRE 관점에서 해야 할 일 중 하나 = Error Budget. 에러 발생이 이 범위를 벗어나지 않도록 해야 한다. SRE 팀에서 이걸 관리하지만, 허용범위를 너무 많이 벗어날 경우에는 아예 서비스 잠깐 내리고 점검하는 게 낫다. Firefighter가 상시대기 상태로 있지만, 그렇다고 24시간 내내 불끄러 다니지는 않듯.
+
+
+---
+## Challenge #2 : Complication 
+
+또 시스템을 바꿨으니, 로그 시스템도 바뀌어야 한다.
+
+
+
+<img width="928" alt="스크린샷 2020-02-09 오후 12 15 42" src="https://user-images.githubusercontent.com/26548454/74095730-0ad1e100-4b38-11ea-897a-6dc665301f04.png">
+
+2개의 sets of logs. Webserver + App log, Webserver + Data storage log. 두 개의 로그를 통해 앱 서버에 문제가 있었는지, 데이터 스토리지에 문제가 있었는지 확인할 수 있다.
+
+로그 두 개를 만들어 troubleshooting하는 방식이 있다. 대신, 이렇게 하게 되면 logging server의 저장공간이 부족해진다. 그전까지는 single VM을 사용했지만, persistent drive로는 부족함.
+
+<img width="923" alt="스크린샷 2020-02-09 오후 12 18 46" src="https://user-images.githubusercontent.com/26548454/74095732-0f969500-4b38-11ea-8e4d-7269d875c35c.png">
+
+-> logging 서버도 그냥 storage에 쓰면 되지 않나? 라고 생각할 수 있지만, log의 format을 보자. Indexable, relational or index based data storage 형식이다. 그러면 BigTable도 괜찮은 선택지다.
+
+Logging Storage에 필요한 사항들을 생각해보면
+* Fast data ingest 지원. & scalability
+* low latency & indexable
+* session key : all values 형태로 데이터를 넣을 수도 있음
+
+= BigTable 사용 가능
+
+<img width="927" alt="스크린샷 2020-02-09 오후 12 23 22" src="https://user-images.githubusercontent.com/26548454/74095733-10c7c200-4b38-11ea-820b-68edf401feb7.png">
+
+따라서, Logging Server가 ingest -> append -> transform 하는 과정 자체는 유지한 채 (transform 방법은 달라질 수 있겠지만) 저장을 local 대신 BigTable에 저장하는 형태로 변경할 수 있다.
+
+물론 dataflow를 사용할 수도 있긴 하지만, 그렇게 되면 logging system 전체를 뜯어고쳐야 함.
+
+---
