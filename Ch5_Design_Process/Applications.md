@@ -340,3 +340,73 @@ Stream processing으로 변환하면서 scalability도 확보.
 ---
 
 
+## Intentional Attack
+
+<img width="928" alt="스크린샷 2020-02-11 오후 8 34 47" src="https://user-images.githubusercontent.com/26548454/74234853-2512e700-4d11-11ea-9566-18ab75bc7e3a.png">
+
+해커의 공격이 있다고 가정할 경우, 두 가지 중요한 이슈를 해결해야 한다.
+
+1. How does the system keep users data private
+2. How does the system protect against a DoS attack.
+
+
+
+해커가 공격한 정황이 보인다면
+- Design 방법을 토대로 현재 어떤 방어조치가 취해져 있는가.
+- 데이터가 위험하지 않도록 추가로 보완할 사항은?
+- what additional design changes will reduce the “attack surface”?
+
+
+<img width="926" alt="스크린샷 2020-02-11 오후 8 38 44" src="https://user-images.githubusercontent.com/26548454/74234860-293f0480-4d11-11ea-96f2-598d2450e259.png">
+
+
+현재 시스템 구조만 놓고 보면, 딱히 위협이 될 상황은 없다. Bulit-in security with the network, Global load balancing and Network load balancing. 하지만 뭐, 아직 internal IP address나 private network, firewall 등은 다루지 않은 상태.
+
+
+
+<img width="924" alt="스크린샷 2020-02-11 오후 8 41 07" src="https://user-images.githubusercontent.com/26548454/74234861-2a703180-4d11-11ea-8b98-2268a887584f.png">
+
+
+Firewall rule 설정이 없으면 port open은 불가능하다. 물론, 기본적으로 firewall rule은 default로 설정되어 있긴 하지만.
+
+
+
+<img width="922" alt="스크린샷 2020-02-11 오후 8 44 52" src="https://user-images.githubusercontent.com/26548454/74234864-2b08c800-4d11-11ea-8ab2-676b96e01287.png">
+
+DDoS 공격이 왔다.
+1. 현재 방어상태는 어떤지
+2. 공격 방어하기
+3. Evolve the design to protect against DDoS.
+
+
+<img width="924" alt="스크린샷 2020-02-11 오후 8 46 01" src="https://user-images.githubusercontent.com/26548454/74235206-d3b72780-4d11-11ea-8640-8e0029e72e3b.png">
+
+
+
+* 일단 Google CDN을 쓴다. 
+-> 구글이 제공하는 전 세계 120여 개의 Edge에 썸네일과 static 데이터를 캐시한다. 
+* Google DNS 적용. 100% uptime (Dyn DNS)
+
+
+<img width="923" alt="스크린샷 2020-02-11 오후 8 48 51" src="https://user-images.githubusercontent.com/26548454/74235222-d9147200-4d11-11ea-8600-dead070de7d8.png">
+
+* Implement Autoscale. Managed instance group을 사용하고 있으므로 handle fail levels이 가능함. 따라서 공격으로 서버까지 접근했으면 Autoscale 작업으로 개별 서버에 들어가는 부하를 줄인다.
+
+
+
+<img width="919" alt="스크린샷 2020-02-11 오후 8 50 31" src="https://user-images.githubusercontent.com/26548454/74235225-d9ad0880-4d11-11ea-8cbb-1614c902f2ee.png">
+
+
+프론트 쪽은 이렇게 막았다고 치자. 하지만 현재 설정만으로는 백엔드가 취약하다. 아무런 보안장치를 해두지 않았으니까. 우회해 들어올 경우의 해결방안은?
+
+
+
+<img width="924" alt="스크린샷 2020-02-11 오후 8 56 00" src="https://user-images.githubusercontent.com/26548454/74235229-da459f00-4d11-11ea-9de0-c3ca9ff7b2af.png">
+
+
+백엔드 서버들을 internal network로 바꿔버리면 된다. 백엔드 서버에 접근하려면 반드시 upload server를 통하게끔 만들어놓으면 됨
+
+
+<img width="924" alt="스크린샷 2020-02-11 오후 8 56 30" src="https://user-images.githubusercontent.com/26548454/74235233-dade3580-4d11-11ea-8fa5-d02548cabed2.png">
+
+기타등등 취할 수 있는 기능들.
