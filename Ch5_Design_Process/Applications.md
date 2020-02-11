@@ -410,3 +410,27 @@ DDoS 공격이 왔다.
 <img width="924" alt="스크린샷 2020-02-11 오후 8 56 30" src="https://user-images.githubusercontent.com/26548454/74235233-dade3580-4d11-11ea-8fa5-d02548cabed2.png">
 
 기타등등 취할 수 있는 기능들.
+
+
+## Challenge #5. Defense in Depth
+
+Log에 사용자 정보와 event 정보가 기록된다. 만약 로그 서버가 보안이 취약하면, 데이터 다 뚫림.
+
+<img width="924" alt="스크린샷 2020-02-11 오후 9 05 54" src="https://user-images.githubusercontent.com/26548454/74237520-15969c80-4d17-11ea-9ca1-d55db18541ed.png">
+
+
+<img width="922" alt="스크린샷 2020-02-11 오후 9 06 56" src="https://user-images.githubusercontent.com/26548454/74237526-1a5b5080-4d17-11ea-935c-b72f448560cd.png">
+
+
+
+해결책.
+- Web Server / App Server가 logging server로 데이터를 보낼 때 IAM으로 Service Account를 사용한다.
+- Logging Server에서 bigtable로 데이터를 전송할 때 Service Account를 사용한다.
+
+- Private Network를 사용한다.
+	* Web, Data storage, App log 생성하는 세 개를 전부 private network로 분리한 다음, 셋을 하나의 VPC로 묶는다. 이 세 개는 각각 통신할 이유가 딱히 없으므로 isolation 해도 괜찮음.
+	* logging server와 통신할 수 있게 한다.
+
+
+
+#컴퓨터공학쪽지식/Coursera/GCP/ch5_infra_design_process/application
