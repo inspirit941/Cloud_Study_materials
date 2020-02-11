@@ -187,3 +187,156 @@ Logging Storage에 필요한 사항들을 생각해보면
 물론 dataflow를 사용할 수도 있긴 하지만, 그렇게 되면 logging system 전체를 뜯어고쳐야 함.
 
 ---
+
+## Periodic Slowdown in Application 
+
+특정 상황에서는 속도가 매우 느리다가, 어느 순간에는 다시 빨라지는 상황.
+
+<img width="920" alt="스크린샷 2020-02-09 오후 2 22 08" src="https://user-images.githubusercontent.com/26548454/74211086-b498a580-4cd1-11ea-836d-822f4f73021c.png">
+
+협력 안 하는 회사를 가정한다면, 위와 같은 모양새가 나온다. Web팀은 App에 문제가 있다고 보고, App 팀은 Web server에 문제가 있다고 생각함. Operation team은 단지 deployment와 production에만 관여했기 때문에, 두 팀 중 어디가 문제인지 확인할 방법이 없음
+
+
+<img width="926" alt="스크린샷 2020-02-09 오후 2 24 37" src="https://user-images.githubusercontent.com/26548454/74211092-ba8e8680-4cd1-11ea-8f30-1ddad4e84176.png">
+
+
+사람 탓하지 마라. 사람은 잘못이 없다. 보통은 세 개 - system, processes, behavior - 중에 원인이 있다.
+
+
+
+<img width="921" alt="스크린샷 2020-02-09 오후 2 38 30" src="https://user-images.githubusercontent.com/26548454/74211093-bbbfb380-4cd1-11ea-9928-65ae0b693f57.png">
+
+나중에 비슷한 일이 발생했을 때를 대비한 report 제작. Recovert process에서 필수적으로 만들어둬야 한다.
+
+
+
+<img width="924" alt="스크린샷 2020-02-09 오후 2 39 53" src="https://user-images.githubusercontent.com/26548454/74211101-bfebd100-4cd1-11ea-8f65-12a5cca5a8c0.png">
+
+
+사용량 많을 땐 cpu 사용량이 100%여서 그렇다는 결론.
+cf. 다만, cpu 사용량은 SLI로 사용할 수 없다.
+
+어쨌든 scalability issue인 건 맞음. 백엔드의 썸네일 프로세싱 작업을 수행하는 부분의 scale이 필요한 상황.
+
+
+<img width="924" alt="스크린샷 2020-02-09 오후 2 41 33" src="https://user-images.githubusercontent.com/26548454/74211102-c11cfe00-4cd1-11ea-96f3-c17b0432e939.png">
+
+
+MSA의 장점이 드러나는 부분인데, storage를 GCS로 isolated해둔 상태이므로, same code 그대로 여러 instnace에 적용할 수 있다. Upload server와 썸네일 처리하는 서버 사이에 internal load balancer를 두는 식으로. 해당 cpu 사용량의 80%를 넘으면 traffic distribution을 시행하도록 작업할 수 있다.
+
+<img width="924" alt="스크린샷 2020-02-09 오후 2 52 12" src="https://user-images.githubusercontent.com/26548454/74211104-c24e2b00-4cd1-11ea-9af1-e431b619f101.png">
+
+
+
+다만, 이 작업을 수행한다고 해서 SLI나 SLO가 바뀔 일은 없다. 여전히 주된 measurement는 end-to-end latency, error rate일 거다.
+
+
+---
+
+## Challenge #3. Growth
+
+다시 Logging 문제. Load balanced auto scaling server가 등장했다는 건, 이제 여러 대의 서버에서 동시에 log 데이터가 발생한다는 걸 말한다. 이걸 어떻게 처리할 것인지?
+
+<img width="925" alt="스크린샷 2020-02-09 오후 2 57 56" src="https://user-images.githubusercontent.com/26548454/74211039-85823400-4cd1-11ea-95d8-2b32a4d6db50.png">
+
+해결책 : logging server에도 load balancer를 달고, multiple instance로 처리하자.
+
+<img width="927" alt="스크린샷 2020-02-09 오후 3 07 37" src="https://user-images.githubusercontent.com/26548454/74211032-7bf8cc00-4cd1-11ea-9680-d177de1b6dd5.png">
+
+
+---
+
+## Out of service!
+
+서비스가 죽은 경우.
+
+- 가정: 모든 백엔드 서버가 single zone + region. Zone이 잠깐 죽어버린 상황.
+-> 사람 문제나 business logic 문제가 아니다. Design problem.
+
+
+<img width="923" alt="스크린샷 2020-02-11 오후 1 43 32" src="https://user-images.githubusercontent.com/26548454/74213165-5cff3780-4cdb-11ea-8cf0-ef3504002c76.png">
+
+1. 책임자를 한 명 선정. 이 사람의 총괄로 작업을 처리할 수 있게끔 한다. 적임자를 정하거나 on-call rotation 등등.
+2. Identify teams that are going to be affected. Establish exactly who the key individuals from those teams are. 어중이떠중이 다 모여서 같은 작업 반복하는 일은 피해야 한다
+3. Postmortem report 준비. (사후보고서)
+
+
+<img width="923" alt="스크린샷 2020-02-11 오후 1 44 14" src="https://user-images.githubusercontent.com/26548454/74213169-64bedc00-4cdb-11ea-8384-505702cd9f0f.png">
+
+Multiple Zone으로 server 분리하는 작업. Cloud load Balancing에서 natively support it.
+
+
+<img width="921" alt="스크린샷 2020-02-11 오후 1 48 07" src="https://user-images.githubusercontent.com/26548454/74213174-67b9cc80-4cdb-11ea-96e6-6ae0f49f31ff.png">
+
+
+SLI나 SLO는 바뀌지 않는다. User experience는 변하지 않기 때문.
+
+
+<img width="922" alt="스크린샷 2020-02-11 오후 1 48 41" src="https://user-images.githubusercontent.com/26548454/74213177-6a1c2680-4cdb-11ea-8ab2-3201741133d4.png">
+
+
+Overload 문제로 서버가 죽는 경우. Upload server의 single point of failure 문제다.
+
+<img width="924" alt="스크린샷 2020-02-11 오후 1 51 08" src="https://user-images.githubusercontent.com/26548454/74213235-aea7c200-4cdb-11ea-8b5c-c4a9b10c3166.png">
+
+Frontend Server Scale. 백엔드 서버에서는 Network Load balancer를 썼지만, frontend에서는 HTTP load balancer를 써야 한다. Presentation Layer (web based)에서 오는 요청이기 때문.
+
+Multiple upload server가 작동하려면, servers should be stateless. Single server면 모든 걸 추적할 수 있지만, multiple server에서는 tracking 작업이 매우 복잡하기 때문.
+
+
+
+<img width="924" alt="스크린샷 2020-02-11 오후 1 54 07" src="https://user-images.githubusercontent.com/26548454/74213243-b4050c80-4cdb-11ea-8e24-5fa66afb0400.png">
+
+Overload 문제 해결작업을 수행했으면 test를 해봐야 한다. 사실 자금여유 있으면 production에서 발생할 수 있는 상황과 동일한 테스트 해보는게 이상적. Preemptible VM that last for 24 hours -> easily clone and do automated deployment of an isolated environment.
+
+
+
+<img width="922" alt="스크린샷 2020-02-11 오후 1 57 04" src="https://user-images.githubusercontent.com/26548454/74213245-b5363980-4cdb-11ea-961d-49f565352c6e.png">
+
+Stateless Server 만들기. = break the state out of upload server. 따라서 isolated state로 프로세스를 분리하는 작업이 필요하다.
+
+
+<img width="923" alt="스크린샷 2020-02-11 오후 1 58 23" src="https://user-images.githubusercontent.com/26548454/74213246-b5ced000-4cdb-11ea-8f02-8ac447b777f4.png">
+
+State를 분절한 다음 저장하는 것 -> GCS로 처리할 수 있다. 
+
+
+<img width="923" alt="스크린샷 2020-02-11 오후 2 00 17" src="https://user-images.githubusercontent.com/26548454/74213249-b6fffd00-4cdb-11ea-9e39-1420ae185c15.png">
+
+
+매번 작업할 때마다 SLI / SLO 확인해봐야 한다. 이제 Single upload server에서 벗어났으므로 availability는 이전보다 상승할 수 있다. Maintain 99.9% availability를 하기 위해서는 deployment 방법을 바꿔야 하고, deploy 과정에서의 downtime도 원치 않으면 downtime budget은 only 43 min per month.
+
+---
+
+## Challenge #4. Redesign for time
+
+서버가 crashed되면, troubleshooting에 시간이 오래 걸린다. Aggregating log need for troubleshooting도 그렇고, 여러 곳에서 꼬리물듯 문제가 계속 터지면 그 로그들도 aggregating하느라 시간이 더 걸린다.
+
+Log system redesign, to eliminate the bottlenecks?
+
+
+<img width="927" alt="스크린샷 2020-02-11 오후 2 05 17" src="https://user-images.githubusercontent.com/26548454/74213250-b7989380-4cdb-11ea-8453-fdb1ef40b887.png">
+
+
+현재의 로그 시스템은 24시간 delay가 존재함. downtime을 43 min 이하로 줄이기 위해서는 어떻게 구조를 바꿔야 할까?
+
+
+<img width="925" alt="스크린샷 2020-02-11 오후 2 06 31" src="https://user-images.githubusercontent.com/26548454/74213251-b8c9c080-4cdb-11ea-9405-c1fa16ba6fc2.png">
+
+
+12 factor 요소 중 하나가 ‘treat logs as event streams’ 였다. log를 batch process로 처리하는 방법은 service troubleshooting을 처리해주지 못함.
+
+
+<img width="928" alt="스크린샷 2020-02-11 오후 2 13 16" src="https://user-images.githubusercontent.com/26548454/74213253-b9625700-4cdb-11ea-8a0c-f03885c2ac24.png">
+
+
+Dataflow를 사용할 수도 있지만, 이 서비스의 담당자는 java에 익숙함. Nodejs로 변경하기에는 어려움. Microprocessing Design을 적용해보자.
+
+모든 데이터 로그를 Cloud pub / sub로 보낸다. 여기에 cloud function을 붙여서 처리하면 사실상 realtime으로 작업이 가능해진다. function으로 처리한 작업은 다시 pub / sub을 타고 BigTable로 저장되도록 flow를 생성.
+
+Stream processing으로 변환하면서 scalability도 확보.
+
+
+---
+
+
