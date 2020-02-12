@@ -433,4 +433,71 @@ Log에 사용자 정보와 event 정보가 기록된다. 만약 로그 서버가
 
 
 
-#컴퓨터공학쪽지식/Coursera/GCP/ch5_infra_design_process/application
+---
+
+
+## Photo Service - Cost and Capacity
+
+-> could we offer the same service for less money?
+
+
+<img width="926" alt="스크린샷 2020-02-12 오전 11 00 44" src="https://user-images.githubusercontent.com/26548454/74299055-e02d9580-4d8e-11ea-8e01-f147a29abcb0.png">
+
+
+Upload server를 reducing the quantity + increasing number of cores로 cost optimize할 수 있을까??
+
+
+
+<img width="922" alt="스크린샷 2020-02-12 오전 11 01 28" src="https://user-images.githubusercontent.com/26548454/74299060-e4f24980-4d8e-11ea-9006-9feef7f33f9d.png">
+
+
+
+N1-standard 1보다 4가 network throughput이 높다. Cpu 코어 개수를 늘려서 network efficiency를 확보하는 것. 일단 네트워크 관점에서는 이득 맞는데, 이게 cost efficient한지도 확인해봐야 한다.
+
+
+<img width="924" alt="스크린샷 2020-02-12 오전 11 22 24" src="https://user-images.githubusercontent.com/26548454/74299085-f89db000-4d8e-11ea-92f4-0b06fe43726c.png">
+
+계산해 보니 이득이라고 함. Managed instance group에서 설정 변경만 해 주면 되는 사안인데, 그런 것 치고는 매우 비용효율적.
+
+
+---
+
+## Challenge #6. Dimensioning
+
+
+<img width="921" alt="스크린샷 2020-02-12 오전 11 40 24" src="https://user-images.githubusercontent.com/26548454/74299088-fd626400-4d8e-11ea-9421-c15b6ca51d51.png">
+
+서비스가 잘 돼서 수요가 두 배는 늘어날 것으로 예측된다고 하자. 이미 autoscale 설정은 다 해두긴 했는데, log information도 두 배는 더 늘어나게 된다. 현재 로그 storage는 BigTable인데, 더 많은 생성량에 대응할 수 있게BigTable node 개수도 늘려야 하는 거 아닐까?
+
+
+
+<img width="924" alt="스크린샷 2020-02-12 오전 11 40 37" src="https://user-images.githubusercontent.com/26548454/74299089-fe939100-4d8e-11ea-80a6-cfd33403a747.png">
+
+
+BigTable 노드는 10000 QPS, 10MB/s of throughput을 가지고 있다.
+
+
+<img width="923" alt="스크린샷 2020-02-12 오전 11 41 31" src="https://user-images.githubusercontent.com/26548454/74299091-ff2c2780-4d8e-11ea-87b7-81f8cba5f562.png">
+
+
+현재 데이터 로그의 크기는 각각 저렇지만, common field를 제거하면 개당 552byte의 크기가 된다. 저 크기의 transaction log가 하루에 3M 정도 쌓임. 즉 하루에 쌓이는 양은 154GB.
+
+따라서 이걸 연 단위로 환산하면 55TB 정도의 크기가 된다.
+
+<img width="927" alt="스크린샷 2020-02-12 오전 11 44 18" src="https://user-images.githubusercontent.com/26548454/74299092-ffc4be00-4d8e-11ea-955c-eea9fa8a4460.png">
+
+현재 시스템 디자인에서, 사용자의 트래픽이 두 배 증가할 경우 어디가 bottleneck이 될 가능성이 클까??
+
+
+<img width="925" alt="스크린샷 2020-02-12 오전 11 46 01" src="https://user-images.githubusercontent.com/26548454/74299095-005d5480-4d8f-11ea-829e-6eb3539eea81.png">
+
+Number of queries per sec our application will use를 확인해야 한다. 연산해 보면 초당 3472 QPS, throughput은 약 1.8MB per sec 정도 된다.
+
+현재 이 정도인데, 이걸 전부 단순 두 배로 확장해봐도 single Bigtable Node 연산량 안에서 처리 가능하다. 문제는 Storage. 110TB까지 늘어나는데, 현재의 22개 노드가 가진 SSD로는 모자라다.
+
+
+그냥 storage만 따로 disk 구매해서 저장하는 게 나을 거다.
+-> HDD? SSD 중 뭐가 더 효율적일까
+
+---
+
