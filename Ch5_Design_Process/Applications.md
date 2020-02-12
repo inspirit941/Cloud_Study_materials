@@ -501,3 +501,40 @@ Number of queries per sec our application will use를 확인해야 한다. 연�
 
 ---
 
+
+## Stabilization and Operation
+
+What kind of alerts and notifications would you set up?
+
+- What if there is a loop?
+- What if there are runaway comsumption of resources?
+
+이 cycle이 out of control이 되면 어떻게 하나?
+
+
+## Challenge #7. Monitoring and Alerting
+
+
+<img width="805" alt="스크린샷 2020-02-12 오후 2 53 49" src="https://user-images.githubusercontent.com/26548454/74309363-ea12c100-4dad-11ea-8718-755c39c573cd.png">
+
+Logging service에 monitoring을 추가하려고 한다. 어떻게 추가할 것인지, 무엇을 monitor하고 alert할 건지.
+
+
+
+<img width="803" alt="스크린샷 2020-02-12 오후 2 55 25" src="https://user-images.githubusercontent.com/26548454/74309369-eed77500-4dad-11ea-8f6e-2c20d2314735.png">
+
+현재 시스템상, 어디 연결이 끊어질 경우 log server가 정상적으로 작동하기 어렵다.
+
+1. 따라서 web log, app log, storage log가 제대로 서버에 들어오고 있는지를 확인하는 작업이 필요할 것.
+
+2. Recency check도 필요하다. BigTable에 쌓이는 로그의 딜레이가 5분을 넘기지는 않는지.
+
+3. Pub / Sub 에서 queue mechanism이 제대로 작동하는지. 너무 far behind일 경우 문제가 생길 수 있으므로
+
+White box monitoring 관점에서 ‘are any of log data out of date? Are there missing potential payload information regarding all 3 of our different log?’
+
+Black box monitoring 관점에서는 network uptime. Any of data being ingested.
+
+<img width="799" alt="스크린샷 2020-02-12 오후 2 59 51" src="https://user-images.githubusercontent.com/26548454/74309373-f139cf00-4dad-11ea-98fb-cfb84f9fc0f9.png">
+
+참고
