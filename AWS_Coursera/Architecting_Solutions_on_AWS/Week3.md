@@ -401,3 +401,19 @@ On-Prem Requirements
 - ECS에서 Container의 scale 여부를 관리하는 건 EC2 Autoscale과 완전히 다른 로직. 따라서 ECS의 autoscaling 기능을 알아두는 것도 필요하다
 
 
+## Assignment
+
+Amazon Simple Storage Service (Amazon S3) cross-Region replication and AWS Key Management Service (AWS KMS) 관련해서 옳은 정보?
+- To configure Amazon S3 cross-Region replication, the source and destination buckets can belong to different AWS accounts. Server-side encryption (SSE) is possible for replicated objects.
+
+
+A solutions architect is designing a hybrid solution. The solution uses Amazon Virtual Private Cloud (Amazon VPC) resources, such Amazon Relational Database Service (Amazon RDS) and Amazon Elastic Compute Cloud (Amazon EC2). It also uses services that are not in a VPC, such as Amazon Simple Storage Service (Amazon S3) and AWS Systems Manager. Which statements about Amazon VPC and the scope of AWS services are correct?
+- Amazon VPC gives the user full control over their virtual networking environment. Therefore, the solutions architect can define firewall rules on the networking level for VPC-based resources.
+  - You can use Amazon VPC to launch AWS resources in a virtual network that you have defined. This virtual network closely resembles a traditional network that you'd operate in your own data center, with the benefits of using the scalable infrastructure of AWS.
+- VPC-based services that reside in a private subnet require specific configurations to enable internet access, such as a NAT gateway and route tables.
+- AWS VPN solutions can be configured to establish secure connections between on-premises networks, remote offices, client devices, and the AWS global network.
+
+AWS Storage Gateway 관련 설명
+- AWS Storage Gateway is a set of hybrid cloud storage services that provide on-premises access to virtually unlimited cloud storage.
+- AWS Storage Gateway delivers data access to on-premises applications while taking advantage of the agility, economics, and security capabilities of the AWS Cloud.
+- AWS Storage Gateway helps support compliance requirements through integration with AWS Backup to manage the backup and recovery of Volume Gateway volumes, which simplifies backup management.

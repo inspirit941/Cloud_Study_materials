@@ -266,7 +266,7 @@ Kinesis 계열 서비스가 큰 틀에서 목적에는 부합하는 편. Designe
   - Designed for continuously capture GB of data per second from hundreds of thousands of sources. (clickstream, DB event stream, financial transaction, social media feeds, IT logs, location-tracking events.)
   - collect 후 ms 단위로 available 가능 - real time anayltics에 사용할 수 있다. firehose보다 lower latency 지원.
   - requires writing additional code, both producer and consumer.
-  - 
+
 
 추가로 customer에게 확인한 결과, clickstream 데이터는 async processing이므로 latency가 중요 요건이 아님. 따라서 이 경우 Firehose가 더 나은 선택지.
 <br>
